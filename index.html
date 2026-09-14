@@ -92,35 +92,52 @@ nav a:hover {
 /* ---------- HERO ---------- */
 
 .hero {
-    min-height: 690px;
+    min-height: 650px;
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     overflow: hidden;
+    background: #fff8e7;
+}
 
-    background:
-        linear-gradient(
-            rgba(58,37,27,0.68),
-            rgba(58,37,27,0.72)
-        ),
-        linear-gradient(
-            120deg,
-            #6b4835,
-            #c9aa72 50%,
-            #f7ead0
-        );
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+
+    background-image: url("reader-reach-hero-photo.jpg");
+    background-size: cover;
+    background-position: center;
 }
 
 .hero::after {
-    content: "BOOKS • AUTHORS • READERS";
+    content: "";
     position: absolute;
-    right: -40px;
-    bottom: 80px;
-    font-family: Georgia, serif;
-    font-size: 70px;
-    font-weight: bold;
-    color: rgba(255,255,255,0.08);
-    transform: rotate(-8deg);
+    top: 0;
+    right: 50%;
+    width: 90px;
+    height: 100%;
+
+    background: linear-gradient(
+        to right,
+        #fff8e7,
+        rgba(255,248,231,0)
+    );
+
+    z-index: 1;
+}
+
+.hero-content {
+    max-width: 1200px;
+    width: 100%;
+    margin: auto;
+    padding: 100px 25px;
+    position: relative;
+    z-index: 2;
+    padding-right: 52%;
 }
 
 .hero-content {

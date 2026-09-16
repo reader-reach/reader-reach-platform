@@ -3534,34 +3534,29 @@ async function submitForm(event) {
         // Save the book submission
         // -------------------------------------------------
 
-        const {
-            data: submissionData,
-            error: submissionError
-        } = await readerReachSupabase
-            .from("book_submissions")
-            .insert({
-                author_name: authorName,
-                author_email: authorEmail,
-                about_author: authorAbout,
+        const { error: submissionError } =
+    await readerReachSupabase
+        .from("book_submissions")
+        .insert({
+            author_name: authorName,
+            author_email: authorEmail,
+            about_author: authorAbout,
 
-                book_title: bookTitle,
-                book_description: bookDescription,
-                genre_topic: bookGenre,
-                book_for: bookAudience,
-                available_where: bookAvailable,
-                book_link: bookLink,
+            book_title: bookTitle,
+            book_description: bookDescription,
+            genre_topic: bookGenre,
+            book_for: bookAudience,
+            available_where: bookAvailable,
+            book_link: bookLink,
 
-                cover_url: coverUrl,
+            cover_url: coverUrl,
 
-                status: "pending"
-            })
-            .select()
-            .single();
+            status: "pending"
+        });
 
-        if (submissionError) {
-            throw submissionError;
-        }
-
+if (submissionError) {
+    throw submissionError;
+}
         // -------------------------------------------------
         // Successful submission
         // -------------------------------------------------
@@ -3572,10 +3567,7 @@ async function submitForm(event) {
 
         form.reset();
 
-        console.log(
-            "Reader Reach submission:",
-            submissionData
-        );
+      
 
     } catch (error) {
 

@@ -3317,56 +3317,172 @@ function saveSubmittedBooks(books) {
     localStorage.setItem("readerReachBooks", JSON.stringify(books));
 }
 
-function renderSubmittedBooks() {
-    const container = document.getElementById("submittedBooks");
+async function renderSubmittedBooks() {
+
+    const container =
+        document.getElementById("submittedBooks");
+
     if (!container) return;
 
+    container.innerHTML =
+        "<p>Loading books...</p>";
+
+    const {
+        data: books,
+        error
+    } = await readerReachSupabase
+        .from("book_submissions")
+        .select("*")
+        .eq("status", "approved")
+        .order("created_at", {
+            ascending: false
+        });
+
+    if (error) {
+
+        console.error(
+            "Could not load approved books:",
+            error
+        );
+
+        container.innerHTML = `
+            <p>
+                Approved books could not be loaded right now.
+            </p>
+        `;
+
+        return;
+    }
+
     container.innerHTML = "";
-    const books = getSubmittedBooks();
+
+    if (!books || books.length === 0) {
+
+        container.innerHTML = `
+            <p>
+                No approved books have been added yet.
+            </p>
+        `;
+
+        return;
+    }
 
     books.forEach(function(book) {
-        const card = document.createElement("article");
-        card.className = "book-card";
 
-        const cover = document.createElement("div");
-        cover.className = "cover";
+        const card =
+            document.createElement("article");
 
-        if (book.cover) {
-            cover.style.backgroundImage = 'url("' + book.cover + '")';
-            cover.style.backgroundSize = "cover";
-            cover.style.backgroundPosition = "center";
+        card.className =
+            "book-card";
+
+
+        const cover =
+            document.createElement("div");
+
+        cover.className =
+            "cover";
+
+
+        if (book.cover_url) {
+
+            cover.style.backgroundImage =
+                'url("' +
+                book.cover_url +
+                '")';
+
+            cover.style.backgroundSize =
+                "cover";
+
+            cover.style.backgroundPosition =
+                "center";
+
         } else {
-            const h3 = document.createElement("h3");
-            h3.textContent = book.title;
-            const small = document.createElement("small");
-            small.textContent = book.author;
+
+            const h3 =
+                document.createElement("h3");
+
+            h3.textContent =
+                book.book_title;
+
+            const small =
+                document.createElement("small");
+
+            small.textContent =
+                book.author_name;
+
             cover.appendChild(h3);
+
             cover.appendChild(small);
         }
 
-        const info = document.createElement("div");
-        info.className = "book-info";
+
+        const info =
+            document.createElement("div");
+
+        info.className =
+            "book-info";
+
+
         info.innerHTML = `
-            <h3>${escapeHtml(book.title)}</h3>
-            <div class="book-author">${escapeHtml(book.author)}</div>
-            <div class="book-meta">${escapeHtml(book.genre)}</div>
-            <p class="book-description">${escapeHtml(book.description)}</p>
-            <p class="book-description"><strong>Who it's for:</strong> ${escapeHtml(book.audience)}</p>
-            <p class="book-description"><strong>Available:</strong> ${escapeHtml(book.available)}</p>
+
+            <h3>
+                ${escapeHtml(book.book_title)}
+            </h3>
+
+            <div class="book-author">
+                ${escapeHtml(book.author_name)}
+            </div>
+
+            <div class="book-meta">
+                ${escapeHtml(book.genre_topic)}
+            </div>
+
+            <p class="book-description">
+                ${escapeHtml(book.book_description)}
+            </p>
+
+            <p class="book-description">
+                <strong>Who it's for:</strong>
+                ${escapeHtml(book.book_for)}
+            </p>
+
+            <p class="book-description">
+                <strong>Available:</strong>
+                ${escapeHtml(book.available_where)}
+            </p>
+
         `;
 
-        const link = document.createElement("a");
-        link.href = book.link;
-        link.target = "_blank";
-        link.rel = "noopener";
-        link.className = "btn btn-primary";
-        link.textContent = "Read the Book →";
+
+        const link =
+            document.createElement("a");
+
+        link.href =
+            book.book_link;
+
+        link.target =
+            "_blank";
+
+        link.rel =
+            "noopener noreferrer";
+
+        link.className =
+            "btn btn-primary";
+
+        link.textContent =
+            "Read the Book →";
+
+
         info.appendChild(link);
 
         card.appendChild(cover);
+
         card.appendChild(info);
+
         container.appendChild(card);
+
     });
+
 }
 
 function submitForm(event) {

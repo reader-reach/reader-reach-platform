@@ -3427,6 +3427,176 @@ renderDiscussions();
 renderSubmittedBooks();
 </script>
 
+<!-- =====================================================
+     READER REACH - BOOK SUBMISSION BACKEND
+===================================================== -->
 
+<script>
+async function submitForm(event) {
+    event.preventDefault();
+
+    const form = document.getElementById("bookSubmissionForm");
+
+    if (!form) {
+        alert("Submission form could not be found.");
+        return;
+    }
+
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Submitting...";
+    }
+
+    try {
+        // Get the values from the existing form
+        const authorName = document.getElementById("authorName").value.trim();
+        const authorEmail = document.getElementById("authorEmail").value.trim();
+        const authorAbout = document.getElementById("authorAbout").value.trim();
+
+        const bookTitle = document.getElementById("bookTitle").value.trim();
+        const bookDescription = document.getElementById("bookDescription").value.trim();
+        const bookGenre = document.getElementById("bookGenre").value.trim();
+        const bookAudience = document.getElementById("bookAudience").value.trim();
+        const bookAvailable = document.getElementById("bookAvailable").value.trim();
+        const bookLink = document.getElementById("bookLink").value.trim();
+
+        const coverInput = document.getElementById("bookCover");
+        const coverFile = coverInput ? coverInput.files[0] : null;
+
+        let coverUrl = null;
+
+        // -------------------------------------------------
+        // Upload book cover if the author selected one
+        // -------------------------------------------------
+
+        if (coverFile) {
+
+            const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+                "image/gif"
+            ];
+
+            if (!allowedTypes.includes(coverFile.type)) {
+                throw new Error(
+                    "Please upload a JPG, PNG, WEBP, or GIF image."
+                );
+            }
+
+            // Maximum cover size: 5 MB
+            if (coverFile.size > 5 * 1024 * 1024) {
+                throw new Error(
+                    "Your book cover must be smaller than 5 MB."
+                );
+            }
+
+            const fileExtension =
+                coverFile.name.split(".").pop().toLowerCase();
+
+            const safeName =
+                authorName
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, "-")
+                    .replace(/^-+|-+$/g, "") || "author";
+
+            const uniqueName =
+                `${Date.now()}-${crypto.randomUUID()}.${fileExtension}`;
+
+            const filePath =
+                `${safeName}/${uniqueName}`;
+
+            const { error: uploadError } =
+                await readerReachSupabase
+                    .storage
+                    .from("book-covers")
+                    .upload(filePath, coverFile, {
+                        cacheControl: "3600",
+                        upsert: false
+                    });
+
+            if (uploadError) {
+                throw uploadError;
+            }
+
+            const { data: publicUrlData } =
+                readerReachSupabase
+                    .storage
+                    .from("book-covers")
+                    .getPublicUrl(filePath);
+
+            coverUrl = publicUrlData.publicUrl;
+        }
+
+        // -------------------------------------------------
+        // Save the book submission
+        // -------------------------------------------------
+
+        const {
+            data: submissionData,
+            error: submissionError
+        } = await readerReachSupabase
+            .from("book_submissions")
+            .insert({
+                author_name: authorName,
+                author_email: authorEmail,
+                about_author: authorAbout,
+
+                book_title: bookTitle,
+                book_description: bookDescription,
+                genre_topic: bookGenre,
+                book_for: bookAudience,
+                available_where: bookAvailable,
+                book_link: bookLink,
+
+                cover_url: coverUrl,
+
+                status: "pending"
+            })
+            .select()
+            .single();
+
+        if (submissionError) {
+            throw submissionError;
+        }
+
+        // -------------------------------------------------
+        // Successful submission
+        // -------------------------------------------------
+
+        alert(
+            "Thank you! Your book has been submitted successfully and is now awaiting review."
+        );
+
+        form.reset();
+
+        console.log(
+            "Reader Reach submission:",
+            submissionData
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Reader Reach submission error:",
+            error
+        );
+
+        alert(
+            "We couldn't submit your book right now.\n\n" +
+            (error.message || "Please try again.")
+        );
+
+    } finally {
+
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = "Submit My Book →";
+        }
+    }
+}
+</script>
 </body>
 </html>

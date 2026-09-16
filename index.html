@@ -1690,7 +1690,22 @@ footer {
 }
 
 </style>
+<!-- READER REACH - SUPABASE CONNECTION -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<script>
+    const SUPABASE_URL = "https://dflrnduddymzhyfxpupl.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_hs8S5cMy82p0D6_DRuoYrQ_CaUZefPc";
+
+    const { createClient } = supabase;
+
+    const readerReachSupabase = createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+    );
+
+    console.log("Reader Reach connected to Supabase");
+</script>
 </head>
 
 
